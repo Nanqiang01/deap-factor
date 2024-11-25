@@ -23,7 +23,7 @@ def fitness_rankic(individual, toolbox, X_train, y_train):
     func = toolbox.compile(expr=individual)
     try:
         rankic = np.nanmean(
-            func(**X_train).corrwith(y_train, method="spearman", axis=1)
+            func(**X_train).shift(2).corrwith(y_train, method="spearman", axis=1)
         )
     except Exception:
         logger.error(f"{individual}的RankIC计算出错。")

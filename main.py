@@ -26,7 +26,7 @@ field_list = [
     "pct_change",
     "vwap",
 ]
-label = ["vwap"]
+label = ["pct_change"]
 X = DataLoader(data_dir, field_list)
 y = DataLoader(data_dir, label)
 logger.info("数据加载完成")
@@ -34,15 +34,14 @@ logger.info("数据加载完成")
 # 切分数据集
 X_train = {}
 X_test = {}
+split_date = "2019-01-01"
 # 切分X
 for field in field_list:
     df = getattr(X, field)
-    X_train[field], X_test[field] = train_test_split(
-        df, test_size=0.2, random_state=42, shuffle=False
-    )
+    X_train[field], X_test[field] = df.loc[:split_date], df.loc[split_date:]
 # 切分y
-df = getattr(y, label[0]).shift(1)  # 为了预测未来的vwap，所以将vwap shift一期
-y_train, y_test = train_test_split(df, test_size=0.2, random_state=42, shuffle=False)
+df = getattr(y, label[0])
+y_train, y_test = df.loc[:split_date], df.loc[split_date:]
 # 删除无用变量
 del X, y, df
 gc.collect()
@@ -61,6 +60,4 @@ engine.run(pop_size=20, ngen=5)
 # 打印最优个体
 for i in range(len(engine.hof)):
     logger.info(engine.hof.items[i])
-cp = {"halloffame": engine.hof, "logbook": engine.logbook}
-logger.info(cp)
 logger.complete()
