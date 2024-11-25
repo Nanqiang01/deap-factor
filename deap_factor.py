@@ -1,3 +1,6 @@
+import operator
+import random
+
 import numpy as np
 from deap import algorithms, base, creator, gp, tools
 
@@ -29,7 +32,7 @@ class DeapFactor:
         self.toolbox.register("compile", gp.compile, pset=self.pset)
 
         # 适应度计算
-        np.random.seed(42)
+        random.seed(42)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
         self.toolbox.register("mate", tools.cxTwoPoint)
         self.toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
@@ -38,8 +41,21 @@ class DeapFactor:
         )
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
+        self.toolbox.decorate(
+            "mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17)
+        )
+        self.toolbox.decorate(
+            "mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17)
+        )
+
     def set_evaluator(self):
-        self.toolbox.register("evaluate", self.fitness)
+        self.toolbox.register(
+            "evaluate",
+            self.fitness,
+            toolbox=self.toolbox,
+            X_train=self.X_train,
+            y_train=self.y_train,
+        )
 
     def set_pop_size(self, pop_size: int):
         self.pop_size = pop_size
@@ -47,7 +63,9 @@ class DeapFactor:
 
     def set_stats(self):
         self.hof = tools.HallOfFame(5)  # 保存最优个体
-        self.stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats_fit = tools.Statistics(lambda ind: ind.fitness.values)
+        stats_size = tools.Statistics(len)
+        self.stats = tools.MultiStatistics(fitness=stats_fit, size=stats_size)
         self.stats.register("avg", np.mean)
         self.stats.register("std", np.std)
         self.stats.register("min", np.min)
@@ -56,16 +74,14 @@ class DeapFactor:
         self.logbook = tools.Logbook()
         self.logbook.header = "gen", "evals", "std", "min", "avg", "max"
 
-    def set_input(self, X_train, y_train):
-        self.X_train = X_train
-        self.y_train = y_train
+    def set_input(self, data, label):
+        setattr(self, label, data)
 
     def run(self, pop_size: int = 300, ngen: int = 40):
         self.set_gp_params()
         self.set_evaluator()
         self.set_pop_size(pop_size)
         self.set_stats()
-        self.set_input()
 
         self.pop, self.logbook = algorithms.eaSimple(
             self.pop,

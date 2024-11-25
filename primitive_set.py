@@ -136,6 +136,7 @@ def set_pset(field_list):
     ]
     for period in periods:
         pset.addTerminal(terminal=period)  # 常数
+    # pset.addEphemeralConstant("randint", lambda: np.random.sample(periods, 1), int)
 
     for i, field in enumerate(field_list):
         pset.renameArguments({f"ARG{i}": field})
