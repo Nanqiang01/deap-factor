@@ -1,4 +1,5 @@
 import gc
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -10,8 +11,11 @@ from deap_factor import DeapFactor
 from fitness import fitness_rankic
 from primitive_set import set_pset
 
+# 忽略警告
+warnings.filterwarnings("ignore")
+
 # 读取数据
-data_dir = "data/"
+data_dir = "D:/southwall/Desktop/SAIF Study/SMQF/data/raw/ddb/"
 field_list = [
     "adjopen",
     "adjhigh",
@@ -52,5 +56,11 @@ logger.info("算子设置完成")
 engine = DeapFactor(pset, fitness_rankic)
 engine.set_input(X_train, "X_train")
 engine.set_input(y_train, "y_train")
-engine.run()
-logger.complete([engine.hof[i] for i in range(5)])
+engine.run(pop_size=20, ngen=5)
+
+# 打印最优个体
+for i in range(len(engine.hof)):
+    logger.info(engine.hof.items[i])
+cp = {"halloffame": engine.hof, "logbook": engine.logbook}
+logger.info(cp)
+logger.complete()

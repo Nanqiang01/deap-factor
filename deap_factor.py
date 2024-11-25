@@ -33,8 +33,8 @@ class DeapFactor:
 
         # 适应度计算
         random.seed(42)
-        self.toolbox.register("select", tools.selTournament, tournsize=3)
-        self.toolbox.register("mate", tools.cxTwoPoint)
+        self.toolbox.register("select", tools.selTournament, tournsize=20)
+        self.toolbox.register("mate", gp.cxOnePoint)
         self.toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
         self.toolbox.register(
             "mutate", gp.mutUniform, expr=self.toolbox.expr_mut, pset=self.pset
@@ -66,10 +66,10 @@ class DeapFactor:
         stats_fit = tools.Statistics(lambda ind: ind.fitness.values)
         stats_size = tools.Statistics(len)
         self.stats = tools.MultiStatistics(fitness=stats_fit, size=stats_size)
-        self.stats.register("avg", np.mean)
-        self.stats.register("std", np.std)
-        self.stats.register("min", np.min)
-        self.stats.register("max", np.max)
+        self.stats.register("avg", np.nanmean)
+        self.stats.register("std", np.nanstd)
+        self.stats.register("min", np.nanmin)
+        self.stats.register("max", np.nanmax)
 
         self.logbook = tools.Logbook()
         self.logbook.header = "gen", "evals", "std", "min", "avg", "max"

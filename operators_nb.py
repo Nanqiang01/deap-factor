@@ -1,11 +1,6 @@
-from functools import lru_cache
-
-import duckdb as ddb
 import numba as nb
 import numpy as np
 import pandas as pd
-
-ddb.connect()
 
 
 # 输入检查
@@ -35,7 +30,9 @@ def add(X, Y):
     _check_input(X)
     _check_input(Y)
     _check_shape(X, Y)
-    return ddb.sql("SELECT * FROM X UNION ALL SELECT * FROM Y")
+    return pd.DataFrame(
+        _add_nb(X.to_numpy(), Y.to_numpy()), index=X.index, columns=X.columns
+    )
 
 
 @nb.njit(nogil=True, cache=True)
@@ -88,8 +85,16 @@ def div(X, Y):
 
 @nb.njit(nogil=True, cache=True)
 def _div_nb(X, Y):
-    """除法"""
-    return np.divide(X, Y)
+    """安全除法"""
+    T, N = X.shape
+    res = np.full_like(X, np.nan)
+    for col in range(N):
+        x_array = X[:, col]
+        y_array = Y[:, col]
+        valid_idx = y_array != 0
+        res[valid_idx, col] = np.divide(x_array[valid_idx], y_array[valid_idx])
+
+    return res
 
 
 def log(X):
@@ -197,7 +202,7 @@ def sigmoid(X):
 @nb.njit(nogil=True, cache=True)
 def _sigmoid_nb(X):
     """Sigmoid函数"""
-    return 1 / (1 + np.exp(-X))
+    return _div_nb(1, (1 + np.exp(-X)))
 
 
 ########## 时序算子 ##########
@@ -246,7 +251,7 @@ def _ts_delta_pct_nb(X, p):
     """一阶差分（百分比）"""
     T, N = X.shape
     res = np.full_like(X, np.nan)
-    res[p:] = (X[p:] - X[: T - p]) / X[: T - p]
+    res[p:] = _div_nb((X[p:] - X[: T - p]), X[: T - p])
     return res
 
 
@@ -268,7 +273,6 @@ def ts_std(X, p):
     return X.rolling(p).std(engine="numba")
 
 
-@lru_cache
 def ts_cov(X, Y, p):
     """过去p期协方差"""
     _check_input(X)
@@ -277,7 +281,6 @@ def ts_cov(X, Y, p):
     return X.rolling(p).cov(Y)
 
 
-@lru_cache
 def ts_corr(X, Y, p):
     """过去p期相关系数"""
     _check_input(X)
@@ -286,7 +289,6 @@ def ts_corr(X, Y, p):
     return X.rolling(p).corr(Y)
 
 
-@lru_cache
 def ts_rank(X, p):
     """过去p期排序"""
     _check_input(X)
@@ -349,14 +351,12 @@ def _ts_argmin_nb(X, p):
     return res
 
 
-@lru_cache
 def ts_skew(X, p):
     """过去p期偏度"""
     _check_input(X)
     return X.rolling(p).skew()
 
 
-@lru_cache
 def ts_kurt(X, p):
     """过去p期峰度"""
     _check_input(X)
@@ -426,7 +426,9 @@ def _ts_scale_nb(X, p, constant):
             if np.count_nonzero(~np.isnan(x_array)) > p / 5:
                 x_min = np.nanmin(x_array)
                 x_max = np.nanmax(x_array)
-                res[t - 1, col] = ((x_array[-1] - x_min) / (x_max - x_min)) + constant
+                res[t - 1, col] = (
+                    _div_nb((x_array[-1] - x_min), (x_max - x_min)) + constant
+                )
     return res
 
 
@@ -495,7 +497,6 @@ def _ts_decay_exp_window_nb(X, p):
 ########## 截面算子 ##########
 
 
-@lru_cache
 def cs_rank(X):
     """截面排序"""
     _check_input(X)

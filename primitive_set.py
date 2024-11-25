@@ -110,11 +110,11 @@ def set_pset(field_list):
         in_types=[DataFrame, DataFrame],
         ret_type=DataFrame,
     )
-    pset.addPrimitive(
-        primitive=op.cs_regression_proj,
-        in_types=[DataFrame, DataFrame],
-        ret_type=DataFrame,
-    )
+    # pset.addPrimitive(
+    #     primitive=op.cs_regression_proj,
+    #     in_types=[DataFrame, DataFrame],
+    #     ret_type=DataFrame,
+    # )
     # 常数算子
     pset.addPrimitive(op.get1, in_types=[], ret_type=int)
     pset.addPrimitive(op.get5, in_types=[], ret_type=int)
