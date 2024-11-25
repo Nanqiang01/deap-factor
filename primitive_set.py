@@ -116,13 +116,13 @@ def set_pset(field_list):
         ret_type=DataFrame,
     )
     # 常数算子
-    pset.addPrimitive(op.get1, [], int)
-    pset.addPrimitive(op.get5, [], int)
-    pset.addPrimitive(op.get10, [], int)
-    pset.addPrimitive(op.get20, [], int)
-    pset.addPrimitive(op.get60, [], int)
-    pset.addPrimitive(op.get122, [], int)
-    pset.addPrimitive(op.get244, [], int)
+    pset.addPrimitive(op.get1, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get5, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get10, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get20, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get60, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get122, in_types=[], ret_type=int)
+    pset.addPrimitive(op.get244, in_types=[], ret_type=int)
 
     # 定义terminal set
     periods = [
@@ -135,7 +135,7 @@ def set_pset(field_list):
         244,
     ]
     for period in periods:
-        pset.addTerminal(terminal=period)  # 常数
+        pset.addTerminal(terminal=period, ret_type=int)  # 常数
     # pset.addEphemeralConstant("randint", lambda: np.random.sample(periods, 1), int)
 
     for i, field in enumerate(field_list):
