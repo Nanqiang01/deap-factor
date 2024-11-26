@@ -202,7 +202,7 @@ def sigmoid(X):
 @nb.njit(nogil=True, cache=True)
 def _sigmoid_nb(X):
     """Sigmoid函数"""
-    return _div_nb(1, (1 + np.exp(-X)))
+    return 1 / (1 + np.exp(-X))
 
 
 ########## 时序算子 ##########
@@ -426,9 +426,10 @@ def _ts_scale_nb(X, p, constant):
             if np.count_nonzero(~np.isnan(x_array)) > p / 5:
                 x_min = np.nanmin(x_array)
                 x_max = np.nanmax(x_array)
-                res[t - 1, col] = (
-                    _div_nb((x_array[-1] - x_min), (x_max - x_min)) + constant
-                )
+                if x_max == x_min:
+                    res[t - 1, col] = constant
+                else:
+                    res[t - 1, col] = (x_array[-1] - x_min) / (x_max - x_min) + constant
     return res
 
 
@@ -445,13 +446,13 @@ def _ts_decay_linear_nb(X, p):
     """过去p期线性加权"""
     T, N = X.shape
     res = np.full_like(X, np.nan)
-    weights = np.arange(1, p + 1)
+    weights = np.arange(p, 0, -1)
     weights = weights / np.sum(weights)
 
-    for i in range(N):
+    for col in range(N):
         for t in range(p, T + 1):
-            arr = X[t - p : t, i]
-            res[t - 1, i] = np.dot(arr, weights[::-1])
+            arr = X[t - p : t, col]
+            res[t - 1, col] = np.nansum(arr * weights)
 
     return res
 

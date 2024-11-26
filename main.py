@@ -55,9 +55,9 @@ logger.info("算子设置完成")
 engine = DeapFactor(pset, fitness_rankic)
 engine.set_input(X_train, "X_train")
 engine.set_input(y_train, "y_train")
-engine.run(pop_size=20, ngen=5)
+engine.run(pop_size=100, ngen=30)
 
 # 打印最优个体
 for i in range(len(engine.hof)):
-    logger.info(engine.hof.items[i])
+    logger.info(f"因子表达式：{engine.hof.items[i]}，适应度：{engine.hof.keys[i]}")
 logger.complete()

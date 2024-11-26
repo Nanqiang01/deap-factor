@@ -30,7 +30,7 @@ def set_pset(field_list):
     pset.addPrimitive(primitive=op.log, in_types=[DataFrame], ret_type=DataFrame)
     pset.addPrimitive(primitive=op.exp, in_types=[DataFrame], ret_type=DataFrame)
     pset.addPrimitive(primitive=op.sqrt, in_types=[DataFrame], ret_type=DataFrame)
-    pset.addPrimitive(primitive=op.pow, in_types=[DataFrame], ret_type=DataFrame)
+    pset.addPrimitive(primitive=op.pow, in_types=[DataFrame, int], ret_type=DataFrame)
     pset.addPrimitive(primitive=op.abs, in_types=[DataFrame], ret_type=DataFrame)
     pset.addPrimitive(primitive=op.sign, in_types=[DataFrame], ret_type=DataFrame)
     pset.addPrimitive(primitive=op.neg, in_types=[DataFrame], ret_type=DataFrame)
@@ -105,11 +105,11 @@ def set_pset(field_list):
     pset.addPrimitive(
         primitive=op.cs_winsorize, in_types=[DataFrame], ret_type=DataFrame
     )
-    pset.addPrimitive(
-        primitive=op.cs_regression_neut,
-        in_types=[DataFrame, DataFrame],
-        ret_type=DataFrame,
-    )
+    # pset.addPrimitive(
+    #     primitive=op.cs_regression_neut,
+    #     in_types=[DataFrame, DataFrame],
+    #     ret_type=DataFrame,
+    # )
     # pset.addPrimitive(
     #     primitive=op.cs_regression_proj,
     #     in_types=[DataFrame, DataFrame],

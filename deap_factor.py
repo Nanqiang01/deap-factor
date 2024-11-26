@@ -33,13 +33,12 @@ class DeapFactor:
 
         # 适应度计算
         random.seed(42)
-        self.toolbox.register("select", tools.selTournament, tournsize=20)
+        self.toolbox.register("select", tools.selTournament, tournsize=3)
         self.toolbox.register("mate", gp.cxOnePoint)
         self.toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
         self.toolbox.register(
             "mutate", gp.mutUniform, expr=self.toolbox.expr_mut, pset=self.pset
         )
-        self.toolbox.register("select", tools.selTournament, tournsize=3)
 
         self.toolbox.decorate(
             "mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17)
@@ -83,9 +82,11 @@ class DeapFactor:
         self.set_pop_size(pop_size)
         self.set_stats()
 
-        self.pop, self.logbook = algorithms.eaSimple(
+        self.pop, self.logbook = algorithms.eaMuPlusLambda(
             self.pop,
             self.toolbox,
+            mu=pop_size,
+            lambda_=pop_size,
             cxpb=0.5,
             mutpb=0.1,
             ngen=ngen,
